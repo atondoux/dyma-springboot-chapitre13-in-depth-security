@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,10 +30,12 @@ public class PlayerController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Players list",
                     content = {@Content(mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = Player.class)))})
+                            array = @ArraySchema(schema = @Schema(implementation = Player.class)))}),
+            @ApiResponse(responseCode = "403", description = "Connected user is not authorized to perform this action.")
 
     })
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public List<Player> list() {
         return playerService.getAllPlayers();
     }
@@ -44,10 +47,12 @@ public class PlayerController {
                             schema = @Schema(implementation = Player.class))}),
             @ApiResponse(responseCode = "404", description = "Player with specified last name was not found.",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Error.class))})
+                            schema = @Schema(implementation = Error.class))}),
+            @ApiResponse(responseCode = "403", description = "Connected user is not authorized to perform this action.")
 
     })
     @GetMapping("{lastName}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Player getByLastName(@PathVariable("lastName") String lastName) {
         return playerService.getByLastName(lastName);
     }
@@ -59,10 +64,12 @@ public class PlayerController {
                             schema = @Schema(implementation = PlayerToSave.class))}),
             @ApiResponse(responseCode = "400", description = "Player with specified last name already exists.",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Error.class))})
+                            schema = @Schema(implementation = Error.class))}),
+            @ApiResponse(responseCode = "403", description = "Connected user is not authorized to perform this action.")
 
     })
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Player createPlayer(@RequestBody @Valid PlayerToSave playerToSave) {
         return playerService.create(playerToSave);
     }
@@ -74,10 +81,12 @@ public class PlayerController {
                             schema = @Schema(implementation = PlayerToSave.class))}),
             @ApiResponse(responseCode = "404", description = "Player with specified last name was not found.",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Error.class))})
+                            schema = @Schema(implementation = Error.class))}),
+            @ApiResponse(responseCode = "403", description = "Connected user is not authorized to perform this action.")
 
     })
     @PutMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Player updatePlayer(@RequestBody @Valid PlayerToSave playerToSave) {
 
         return playerService.update(playerToSave);
@@ -88,10 +97,12 @@ public class PlayerController {
             @ApiResponse(responseCode = "200", description = "Player has been deleted"),
             @ApiResponse(responseCode = "404", description = "Player with specified last name was not found.",
                     content = {@Content(mediaType = "application/json",
-                            schema = @Schema(implementation = Error.class))})
+                            schema = @Schema(implementation = Error.class))}),
+            @ApiResponse(responseCode = "403", description = "Connected user is not authorized to perform this action.")
 
     })
     @DeleteMapping("{lastName}")
+    @PreAuthorize("hasRole('ADMIN')")
     public void deletePlayerByLastName(@PathVariable("lastName") String lastName) {
         playerService.delete(lastName);
     }
